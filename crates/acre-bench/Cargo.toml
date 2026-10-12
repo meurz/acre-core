@@ -1,0 +1,17 @@
+[package]
+name = "acre-bench"
+description = "Acre disk scanning benchmarks and diagnostics"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+acre-core = { path = "../acre-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[target.'cfg(windows)'.dependencies]
+ntfs-reader = "=0.6.0"
+windows = { workspace = true, features = ["Win32_Graphics_Gdi"] }

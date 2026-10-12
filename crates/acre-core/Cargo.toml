@@ -1,0 +1,19 @@
+[package]
+name = "acre-core"
+description = "Windows disk usage scanning with direct NTFS MFT access and a compact directory tree"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rayon = "1.11"
+dua-core = "4.1.0"
+
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true }
+# Enable only drive discovery and capacity queries.
+sysinfo = { version = "0.38", default-features = false, features = ["disk"] }
+# IFileOperation recycling and cleanup of test-created recycle-bin entries.
+trash = "5.2"
