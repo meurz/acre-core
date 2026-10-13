@@ -1,0 +1,239 @@
+{
+  "summary": {
+    "directories_including_root": 5,
+    "regular_file_entries": 9,
+    "symlink_entries": 4,
+    "entries_including_root": 18,
+    "unique_inodes": 17,
+    "allocated_including_directories_deduplicated": 81920,
+    "logical_including_directories_deduplicated": 8434104,
+    "regular_file_logical_deduplicated": 8401195,
+    "regular_file_allocated_deduplicated": 45056,
+    "unique_regular_file_inodes": 8,
+    "logical_excluding_directories_deduplicated": 8401336
+  },
+  "variants": [
+    {
+      "name": "fixture-dynamic-1m-512.vhdx",
+      "subformat": "dynamic",
+      "block_size": 1048576,
+      "sector_size": 512,
+      "bytes": 11534336,
+      "gzip_bytes": 13458,
+      "sha256": "092397bbbdd9bdeea7ecdae8bccaef4d56ad2e7b82729bbde0b0aac651639ab6",
+      "verification": "qemu check + BAT/raw compare"
+    },
+    {
+      "name": "fixture-dynamic-2m-512.vhdx",
+      "subformat": "dynamic",
+      "block_size": 2097152,
+      "sector_size": 512,
+      "bytes": 14680064,
+      "gzip_bytes": 16507,
+      "sha256": "d849dc7740e958562d11e9d024be27c8dd941e1508b652356a3a3a64c4b79160",
+      "verification": "qemu check + BAT/raw compare"
+    },
+    {
+      "name": "fixture-fixed-1m-512.vhdx",
+      "subformat": "fixed",
+      "block_size": 1048576,
+      "sector_size": 512,
+      "bytes": 78643200,
+      "gzip_bytes": 78694,
+      "sha256": "32453dcea92f07c1b0aa773e99f8f02cf2effa1fa5b898b3e03c7ed97f080563",
+      "verification": "qemu check + BAT/raw compare"
+    },
+    {
+      "name": "fixture-dynamic-1m-4096.vhdx",
+      "subformat": "dynamic",
+      "block_size": 1048576,
+      "sector_size": 4096,
+      "bytes": 11534336,
+      "gzip_bytes": 13453,
+      "sha256": "d43657c27b9e11c47eb0193e420d8d1d9d97b357540d1f2726e2d91e6d8086e4",
+      "verification": "BAT/raw compare (qemu does not support 4096-byte logical sectors)"
+    }
+  ],
+  "entries": [
+    {
+      "path": "/",
+      "inode": 2,
+      "kind": "directory",
+      "size": 4096,
+      "allocated": 4096,
+      "links": 4,
+      "unique_allocated": 4096,
+      "unique_size": 4096
+    },
+    {
+      "path": "/Case.txt",
+      "inode": 18,
+      "kind": "regular",
+      "size": 11,
+      "allocated": 4096,
+      "links": 1,
+      "unique_allocated": 4096,
+      "unique_size": 11
+    },
+    {
+      "path": "/Unicode-資料.txt",
+      "inode": 20,
+      "kind": "regular",
+      "size": 26,
+      "allocated": 4096,
+      "links": 1,
+      "unique_allocated": 4096,
+      "unique_size": 26
+    },
+    {
+      "path": "/case.txt",
+      "inode": 19,
+      "kind": "regular",
+      "size": 11,
+      "allocated": 4096,
+      "links": 1,
+      "unique_allocated": 4096,
+      "unique_size": 11
+    },
+    {
+      "path": "/docs",
+      "inode": 12,
+      "kind": "directory",
+      "size": 4096,
+      "allocated": 4096,
+      "links": 4,
+      "unique_allocated": 4096,
+      "unique_size": 4096
+    },
+    {
+      "path": "/docs/empty-dir",
+      "inode": 14,
+      "kind": "directory",
+      "size": 4096,
+      "allocated": 4096,
+      "links": 2,
+      "unique_allocated": 4096,
+      "unique_size": 4096
+    },
+    {
+      "path": "/docs/hardlink.bin",
+      "inode": 15,
+      "kind": "regular",
+      "size": 12345,
+      "allocated": 16384,
+      "links": 2,
+      "unique_allocated": 16384,
+      "unique_size": 12345
+    },
+    {
+      "path": "/docs/nested",
+      "inode": 13,
+      "kind": "directory",
+      "size": 4096,
+      "allocated": 4096,
+      "links": 2,
+      "unique_allocated": 4096,
+      "unique_size": 4096
+    },
+    {
+      "path": "/docs/nested/data.bin",
+      "inode": 15,
+      "kind": "regular",
+      "size": 12345,
+      "allocated": 16384,
+      "links": 2,
+      "unique_allocated": 0,
+      "unique_size": 0
+    },
+    {
+      "path": "/docs/nested/empty.txt",
+      "inode": 16,
+      "kind": "regular",
+      "size": 0,
+      "allocated": 0,
+      "links": 1,
+      "unique_allocated": 0,
+      "unique_size": 0
+    },
+    {
+      "path": "/docs/readme.txt",
+      "inode": 17,
+      "kind": "regular",
+      "size": 43,
+      "allocated": 4096,
+      "links": 1,
+      "unique_allocated": 4096,
+      "unique_size": 43
+    },
+    {
+      "path": "/long-symlink",
+      "inode": 26,
+      "kind": "symlink",
+      "size": 90,
+      "allocated": 4096,
+      "links": 1,
+      "unique_allocated": 4096,
+      "unique_size": 90
+    },
+    {
+      "path": "/loop",
+      "inode": 24,
+      "kind": "symlink",
+      "size": 4,
+      "allocated": 0,
+      "links": 1,
+      "unique_allocated": 0,
+      "unique_size": 4
+    },
+    {
+      "path": "/lost+found",
+      "inode": 11,
+      "kind": "directory",
+      "size": 16384,
+      "allocated": 16384,
+      "links": 2,
+      "unique_allocated": 16384,
+      "unique_size": 16384
+    },
+    {
+      "path": "/name\\with\\slashes.txt",
+      "inode": 21,
+      "kind": "regular",
+      "size": 28,
+      "allocated": 4096,
+      "links": 1,
+      "unique_allocated": 4096,
+      "unique_size": 28
+    },
+    {
+      "path": "/outside",
+      "inode": 25,
+      "kind": "symlink",
+      "size": 27,
+      "allocated": 0,
+      "links": 1,
+      "unique_allocated": 0,
+      "unique_size": 27
+    },
+    {
+      "path": "/sparse.bin",
+      "inode": 22,
+      "kind": "regular",
+      "size": 8388731,
+      "allocated": 8192,
+      "links": 1,
+      "unique_allocated": 8192,
+      "unique_size": 8388731
+    },
+    {
+      "path": "/symlink-data",
+      "inode": 23,
+      "kind": "symlink",
+      "size": 20,
+      "allocated": 0,
+      "links": 1,
+      "unique_allocated": 0,
+      "unique_size": 20
+    }
+  ]
+}

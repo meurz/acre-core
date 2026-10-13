@@ -268,9 +268,18 @@ pub struct DiskTree {
     exts: Vec<ExtTotals>,
     root: NodeId,
     summary: Summary,
+    image: bool,
 }
 
 impl DiskTree {
+    /// Whether this tree represents read-only virtual disk contents, not host paths.
+    pub fn is_read_only(&self) -> bool {
+        self.image
+    }
+    /// Whether paths use Unix separators and case-sensitive names.
+    pub fn uses_unix_paths(&self) -> bool {
+        self.image
+    }
     /// Root node.
     pub fn root(&self) -> NodeId {
         self.root
@@ -320,10 +329,10 @@ impl DiskTree {
         }
         v
     }
-    /// Find a direct child by case-insensitive name.
+    /// Find a direct child (case-sensitive for image contents).
     pub fn child_by_name(&self, id: NodeId, name: &str) -> Option<NodeId> {
         self.children(id)
-            .find(|&c| names_equal_ci(self.name(c), name))
+            .find(|&c| if self.image { self.name(c) == name } else { names_equal_ci(self.name(c), name) })
     }
     /// Subtree file and directory counts; returns zero for files.
     pub fn dir_totals(&self, id: NodeId) -> DirTotals {
@@ -337,7 +346,7 @@ impl DiskTree {
             DirTotals::default()
         }
     }
-    /// Full path, joined with backslashes, starting from the root name.
+    /// Full path using Unix separators for images and backslashes for host paths.
     pub fn path(&self, id: NodeId) -> String {
         let mut parts = Vec::new();
         let mut cur = id;
@@ -349,9 +358,10 @@ impl DiskTree {
             cur = self.node(cur).parent;
         }
         let mut out = String::new();
+        let separator = if self.image { '/' } else { '\\' };
         for (i, p) in parts.iter().rev().enumerate() {
-            if i > 0 && !out.ends_with('\\') {
-                out.push('\\');
+            if i > 0 && !out.ends_with(separator) {
+                out.push(separator);
             }
             out.push_str(p);
         }
@@ -431,8 +441,21 @@ impl DiskTree {
     }
 
     /// Find a full path using the root-name convention of [`DiskTree::path`]. Matching ignores
-    /// case, accepts either slash separator, and ignores trailing separators.
+    /// case and accepts either separator for host paths. Image paths are exact Unix paths.
     pub fn find_path(&self, path: &str) -> Option<NodeId> {
+        if self.image {
+            if !path.starts_with('/') { return None; }
+            let root = self.name(self.root).trim_end_matches('/');
+            let rest = path.strip_prefix(root)?;
+            if !rest.starts_with('/') && !rest.is_empty() {
+                return None;
+            }
+            let mut cur = self.root;
+            for part in rest.split('/').filter(|p| !p.is_empty()) {
+                cur = self.child_by_name(cur, part)?;
+            }
+            return Some(cur);
+        }
         let norm = |s: &str| s.replace('/', "\\").trim_end_matches('\\').to_string();
         let path = norm(path);
         let root_name = norm(self.name(self.root));
@@ -480,6 +503,7 @@ impl DiskTree {
             1
         };
         let mut b = TreeBuilder::with_capacity(root_name, est, est.saturating_mul(24));
+        b.image = self.image;
         let root = b.root();
         let (l, a) = self.own_sizes(id);
         {
@@ -708,9 +732,17 @@ pub struct TreeBuilder {
     names: Vec<u8>,
     root: NodeId,
     summary: Summary,
+    image: bool,
 }
 
 impl TreeBuilder {
+    /// Create a read-only image tree rooted at `/`, with Unix path semantics.
+    pub fn new_image() -> Self {
+        let mut builder = Self::new("/");
+        builder.image = true;
+        builder
+    }
+
     /// Create a tree with only a root directory.
     pub fn new(root_name: &str) -> Self {
         Self::with_capacity(root_name, 0, 0)
@@ -723,6 +755,7 @@ impl TreeBuilder {
             names: Vec::with_capacity(name_bytes),
             root: 0,
             summary: Summary::default(),
+            image: false,
         };
         let off = b.push_name(root_name);
         b.nodes.push(Node {
@@ -741,6 +774,7 @@ impl TreeBuilder {
             names,
             root,
             summary,
+            image: false,
         }
     }
 
@@ -827,6 +861,7 @@ impl TreeBuilder {
             names,
             root,
             mut summary,
+            image,
         } = self;
         let trace = std::env::var_os("ACRE_MFT_TRACE").is_some();
         let t0 = std::time::Instant::now();
@@ -1003,6 +1038,7 @@ impl TreeBuilder {
             exts,
             root,
             summary,
+            image,
         }
     }
 

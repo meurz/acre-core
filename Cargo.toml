@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = ["crates/acre-core", "crates/acre-bench"]
+exclude = ["third_party/ext4-view"]
 
 [workspace.package]
 version = "0.1.0"

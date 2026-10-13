@@ -10,6 +10,8 @@ repository.workspace = true
 [dependencies]
 rayon = "1.11"
 dua-core = "4.1.0"
+sootmark-vhdx = "0.1.4"
+ext4-view = { path = "../../third_party/ext4-view", features = ["std"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { workspace = true }
@@ -17,3 +19,7 @@ windows = { workspace = true }
 sysinfo = { version = "0.38", default-features = false, features = ["disk"] }
 # IFileOperation recycling and cleanup of test-created recycle-bin entries.
 trash = "5.2"
+
+[dev-dependencies]
+flate2 = "1"
+crc = "3"

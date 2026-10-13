@@ -16,6 +16,7 @@ pub mod mft;
 pub mod scan;
 pub mod tree;
 pub mod walk;
+pub mod vhdx;
 
 #[cfg(windows)]
 pub mod delete;
