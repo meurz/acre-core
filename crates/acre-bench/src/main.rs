@@ -27,9 +27,9 @@ use report::{ExtItem, Report, compare, human, items_from_tree, parse_wiztree_csv
 const HELP: &str = r#"Acre scanning benchmarks and diagnostics
 
 Usage:
-  acre-bench scan <root> [--backend auto|mft|walk|ntfs-reader|ntfs-reader-full]
+  acre-bench scan <root> [--backend auto|mft|walk|vhdx|ntfs-reader|ntfs-reader-full]
       [--threads N] [--depth N] [--no-dir-index] [--out report.json]
-  acre-bench progress <root> [--backend auto|mft|walk] [--cancel-after-ms N]
+  acre-bench progress <root> [--backend auto|mft|walk|vhdx] [--cancel-after-ms N]
       [--out progress.json]
   acre-bench compare <baseline.json> <other.json> [--depth N] [--all]
   acre-bench memtest [--nodes 1000000] [--out memory.json]
@@ -42,7 +42,8 @@ Windows-only commands:
       [--depth N] [--timeout 900] [--out report.json]
 
 MFT access requires an elevated terminal and an NTFS volume. Auto falls back to
-directory traversal. Scans do not modify their targets. JSON reports go to stdout
+directory traversal. VHDX images are read directly and must be offline.
+Scans do not modify their targets. JSON reports go to stdout
 unless --out is supplied; progress and diagnostic messages go to stderr.
 "#;
 
@@ -161,11 +162,12 @@ fn cmd_scan(a: &Args) -> Result<(), String> {
         ..Report::default()
     };
     let tree = match backend {
-        "mft" | "walk" | "auto" => {
+        "mft" | "walk" | "auto" | "vhdx" => {
             let mut opts = ScanOptions::new(PathBuf::from(&root));
             opts.backend = match backend {
                 "mft" => Backend::Mft,
                 "walk" => Backend::Walk,
+                "vhdx" => Backend::Vhdx,
                 _ => Backend::Auto,
             };
             opts.threads = a.num("threads", 0);
@@ -175,6 +177,7 @@ fn cmd_scan(a: &Args) -> Result<(), String> {
             rep.tool = match out.backend {
                 acre_core::BackendUsed::Mft => "acre-mft".into(),
                 acre_core::BackendUsed::Walk => "dua-core-walk".into(),
+                acre_core::BackendUsed::Vhdx => "vhdx-ext4".into(),
             };
             rep.prepare_ms = out.timings.prepare.as_secs_f64() * 1000.0;
             rep.read_ms = out.timings.read.as_secs_f64() * 1000.0;
@@ -199,7 +202,7 @@ fn cmd_scan(a: &Args) -> Result<(), String> {
     rep.wall_ms = rep.scan_ms;
     let s = *tree.summary();
     rep.files = s.files;
-    if rep.tool == "dua-core-walk" {
+    if matches!(rep.tool.as_str(), "dua-core-walk" | "vhdx-ext4") {
         rep.file_names = s.files;
         rep.files_unique = s.files.saturating_sub(s.extra_link_names);
     } else {
@@ -470,6 +473,7 @@ fn cmd_progress(a: &Args) -> Result<(), String> {
     opts.backend = match a.get("backend").unwrap_or("auto") {
         "mft" => Backend::Mft,
         "walk" => Backend::Walk,
+        "vhdx" => Backend::Vhdx,
         _ => Backend::Auto,
     };
     let cancel_after = a.get("cancel-after-ms").and_then(|v| v.parse::<u64>().ok());

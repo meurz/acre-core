@@ -99,7 +99,7 @@ pub struct ProgressSnapshot {
 /// Control state shared between the scanner and UI.
 #[derive(Debug)]
 pub struct ScanControl {
-    cancel: AtomicBool,
+    cancel: Arc<AtomicBool>,
     progress: Progress,
     want_batches: bool,
     batches: Mutex<Vec<Batch>>,
@@ -109,7 +109,7 @@ impl ScanControl {
     /// Create control state; `want_batches` enables incremental result delivery.
     pub fn new(want_batches: bool) -> Self {
         ScanControl {
-            cancel: AtomicBool::new(false),
+            cancel: Arc::new(AtomicBool::new(false)),
             progress: Progress::default(),
             want_batches,
             batches: Mutex::new(Vec::new()),
@@ -126,6 +126,9 @@ impl ScanControl {
     /// The cancellation flag for the reader thread.
     pub fn cancel_flag(&self) -> &AtomicBool {
         &self.cancel
+    }
+    pub(crate) fn cancel_token(&self) -> Arc<AtomicBool> {
+        Arc::clone(&self.cancel)
     }
     /// Progress counters.
     pub fn progress(&self) -> &Progress {
@@ -171,6 +174,8 @@ pub enum Backend {
     Mft,
     /// Use only directory traversal (dua-core).
     Walk,
+    /// Read a WSL VHDX image containing an ext4 filesystem, without mounting it.
+    Vhdx,
 }
 
 /// The backend actually used.
@@ -180,12 +185,14 @@ pub enum BackendUsed {
     Mft,
     /// Directory traversal.
     Walk,
+    /// Read a WSL VHDX image containing an ext4 filesystem, without mounting it.
+    Vhdx,
 }
 
 /// Scan options.
 #[derive(Clone, Debug)]
 pub struct ScanOptions {
-    /// A volume root or directory to scan.
+    /// A volume root, directory, or WSL VHDX image to scan.
     pub root: PathBuf,
     /// Requested backend.
     pub backend: Backend,
@@ -196,7 +203,7 @@ pub struct ScanOptions {
     pub batches: bool,
     /// Number of entries per batch.
     pub batch_size: usize,
-    /// Include directory index allocation in directory sizes (MFT only).
+    /// Include directory index allocation in directory sizes (MFT and VHDX).
     pub count_directory_index: bool,
     /// For an elevated NTFS folder scan, read the volume MFT and extract the requested subtree.
     /// This preserves whole-volume hard-link and directory-index accounting and benefits large
@@ -338,6 +345,14 @@ pub fn scan_blocking(opts: &ScanOptions, ctl: &ScanControl) -> Result<ScanOutcom
     let t0 = Instant::now();
     ctl.set_phase(Phase::Starting);
     let mut notes = Vec::new();
+    if ctl.is_cancelled() {
+        return Err(ScanError::Cancelled);
+    }
+    if opts.backend == Backend::Vhdx
+        || (opts.backend == Backend::Auto && crate::vhdx::is_image_path(&opts.root) && !opts.root.is_dir())
+    {
+        return crate::vhdx::scan(opts, ctl);
+    }
 
     if matches!(opts.backend, Backend::Auto | Backend::Mft) {
         match try_mft(opts, ctl) {

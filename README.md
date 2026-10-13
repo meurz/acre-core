@@ -61,3 +61,9 @@ Scans are not filesystem snapshots, so files changing during a scan can affect t
 Acre Core is available under either the [MIT license](LICENSE-MIT) or the [Apache License 2.0](LICENSE-APACHE).
 
 Parts of the NTFS implementation are adapted from [mathom](https://github.com/gitRasheed/mathom), Copyright (c) 2026 Rasheed Khoshnaw, under the MIT license. Source headers retain attribution; its original license is included in [third_party/mathom-LICENSE](third_party/mathom-LICENSE). That third-party code remains subject to its MIT terms. Dependencies retain their respective licenses. WizTree is an optional external comparison tool and is not bundled.
+
+## WSL virtual disks
+
+Scan offline WSL VHDX images directly, without mounting them or invoking WSL.
+The read-only ext4 tree supports sparse files, hard-link deduplication, Unix paths,
+progress, and cancellation. See [image support and limitations](docs/vhdx.md).
